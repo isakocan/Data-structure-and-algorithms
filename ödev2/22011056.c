@@ -155,7 +155,11 @@ void printPlaylist(SongNode* head) {
 
 
 void printToplist(TopList* head){
+<<<<<<< HEAD
 	printf("\n\n-_ Top10 List _-\n==================\n\n");
+=======
+	printf("\n\n-_ Top List _-\n==================\n\n");
+>>>>>>> e2213959788cef5f11533d2e67cf08207975a53f
 	TopList* current = head;
     int counter = 1;
 	int duration, minutes, seconds;
@@ -191,7 +195,10 @@ void addTopList(TopList** head, int songIndex, int duration, char name[]) {
         if (prev == NULL) *head = foundNode->next;
 		else prev->next = foundNode->next;
 		foundNode->next = NULL;
+<<<<<<< HEAD
 		foundNode->listenTimes++;
+=======
+>>>>>>> e2213959788cef5f11533d2e67cf08207975a53f
     } 
 	else { 
         foundNode = (TopList*) malloc(sizeof(TopList));
@@ -199,7 +206,10 @@ void addTopList(TopList** head, int songIndex, int duration, char name[]) {
         foundNode->listenDuration = duration;
         strcpy(foundNode->name, name);
         foundNode->next = NULL;
+<<<<<<< HEAD
         foundNode->listenTimes = 1;
+=======
+>>>>>>> e2213959788cef5f11533d2e67cf08207975a53f
     }
 
     if (*head == NULL || (*head)->listenDuration <= foundNode->listenDuration) {
