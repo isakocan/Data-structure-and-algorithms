@@ -16,9 +16,9 @@ typedef struct TopList{
 	char name[50];
 	int songIndex;
 	int listenDuration;
+	int listenTimes;
 	struct TopList* next;
 }TopList;
-
 
 
 SongNode* createNode(char* name, int songIndex ,int duration);
@@ -53,24 +53,17 @@ int main(){
         357, 482, 390, 369, 303, 216, 456, 259, 251, 355, 203, 202, 227, 238, 266, 248, 219, 289, 216, 198, 558, 405, 302, 359, 122, 263, 331, 273, 327, 296, 204, 293, 
         226, 244, 253, 241, 213, 233, 309, 301, 187, 261, 279, 177, 417, 368, 251, 495, 246, 268, 242, 236, 302, 374, 300, 358, 226, 328, 228, 276, 208, 301, 257, 196, 
         142, 235, 429, 242, 188, 242, 241, 200, 173, 206, 241, 224, 206, 240, 258, 212, 357, 231, 279, 411, 262, 248, 373, 265, 245, 284, 219, 222, 267, 232, 227, 214, 
-        201, 233, 199                               
+        201, 233, 199, 250                               
     };
     
-	int k;
-    int n;
-    int maxSongCount;
-    int minSongCount;
-    int songCount;
+	int k, n, maxSongCount, minSongCount, songCount, randomSong, i, j;
     SongNode** users;
     TopList* topList = NULL;
     int* usersSongCount;
-    int i,j;
-    int randomSong;
 
-    printf("Lutfen kullanici sayisini (K) giriniz: ");
+    printf("Please enter the number of users (K): ");
     scanf("%d", &k);
-
-    printf("Lutfen sistemdeki toplam sarki sayisini (N) giriniz: ");
+    printf("Please enter the total number of songs (N): ");
     scanf("%d", &n);
 	
 	users = (SongNode**) malloc(k*sizeof(SongNode*));
@@ -80,16 +73,13 @@ int main(){
 
 	for(i=0;i<k;i++){
 		usersSongCount[i] = createPlaylists(&users[i], n, maxSongCount, minSongCount, songNames, songDurations);
+		printf("User %d's Playlist\n", i+1);
+		printPlaylist(users[i]);
+		printf("\n");
 	}
 	
 	for(i=0;i<k;i++){
-		printf("User %d's ", i+1);
-		printPlaylist(users[i]);
-		printf("\n");
-	}	
-	
-	for(i=0;i<k;i++){
-		printf("\n\n[i]-> User %d' is being simulated!\n", i+1);
+		printf("\n\n--- Simulating User %d ---\n", i+1);
 		simulateUser(usersSongCount[i], &topList, users[i]);
 		printToplist(topList);
 	}
@@ -105,25 +95,18 @@ int main(){
 }
 
 
-
-
 SongNode* createNode(char* name, int songIndex ,int duration) {
-
     SongNode* newNode = (SongNode*)malloc(sizeof(SongNode));
     strcpy(newNode->name, name);
     newNode->duration = duration;
     newNode->songIndex = songIndex;
     newNode->prev = NULL;
     newNode->next = NULL;
-
     return newNode;
 }
 
 
-
-
 void addNode(SongNode** head, SongNode* newNode) {
-
     if (*head == NULL) {
         *head = newNode; 
         newNode->next = newNode; 
@@ -139,15 +122,11 @@ void addNode(SongNode** head, SongNode* newNode) {
 }
 
 
-
-
 int createPlaylists(SongNode** user, int n, int maxSongCount, int minSongCount, char songNames[][50], int songDurations[]) {
-
     int songCount;
     int randomSong;
     int i;
     SongNode* newNode;
-        
 	*user = NULL; 
     songCount = (rand() % (maxSongCount - minSongCount + 1)) + minSongCount;
 
@@ -156,16 +135,11 @@ int createPlaylists(SongNode** user, int n, int maxSongCount, int minSongCount, 
 		newNode = createNode(songNames[randomSong], randomSong ,songDurations[randomSong]);
 		addNode(user, newNode);
     }
-	
 	return songCount;
 }
 
 
-
-
 void printPlaylist(SongNode* head) {
-
-    printf("Song List:\n");
     SongNode* current = head;
     int counter = 1;
 	int duration, minutes, seconds;
@@ -173,7 +147,7 @@ void printPlaylist(SongNode* head) {
         duration = current->duration;
         minutes = duration / 60;
         seconds = duration % 60;
-        printf("%d. %s | %d dk %02d sn\n", counter, current->name, minutes, seconds);
+        printf("%d. %s | %d min %02d sec\n", counter, current->name, minutes, seconds);
         current = current->next;
         counter++;
     } while (current != head);
@@ -181,20 +155,19 @@ void printPlaylist(SongNode* head) {
 
 
 void printToplist(TopList* head){
-	printf("\n\n**Top List**\n==================\n\n");
+	printf("\n\n-_ Top10 List _-\n==================\n\n");
 	TopList* current = head;
     int counter = 1;
 	int duration, minutes, seconds;
-	while (current != NULL){
+	while (current != NULL && counter <= 10){
 		duration = current->listenDuration;
         minutes = duration / 60;
         seconds = duration % 60;
-        printf("%d. %s | %d dk %02d sn\n", counter, current->name, minutes, seconds);
+        printf("%d. %s | Duration: %d dk %02d sn | Listens: %d\n", counter, current->name, minutes, seconds, current->listenTimes);
         current = current->next;
         counter++;
 	}
 }
-
 
 
 void addTopList(TopList** head, int songIndex, int duration, char name[]) {
@@ -214,18 +187,20 @@ void addTopList(TopList** head, int songIndex, int duration, char name[]) {
     }
 
     if (foundNode != NULL) { 
-        
         foundNode->listenDuration += duration;
         if (prev == NULL) *head = foundNode->next;
 		else prev->next = foundNode->next;
+		foundNode->next = NULL;
+		foundNode->listenTimes++;
     } 
 	else { 
         foundNode = (TopList*) malloc(sizeof(TopList));
         foundNode->songIndex = songIndex;
         foundNode->listenDuration = duration;
         strcpy(foundNode->name, name);
+        foundNode->next = NULL;
+        foundNode->listenTimes = 1;
     }
-
 
     if (*head == NULL || (*head)->listenDuration <= foundNode->listenDuration) {
         foundNode->next = *head;
@@ -242,12 +217,7 @@ void addTopList(TopList** head, int songIndex, int duration, char name[]) {
 }
 
 
-
-
-
-
 void simulateUser(int m, TopList** head, SongNode* userPlaylist){
-	
 	int i, j;
 	int songCount = (rand() % m) + 1;
 	int jumpedSong;
@@ -255,31 +225,15 @@ void simulateUser(int m, TopList** head, SongNode* userPlaylist){
 	
 	for(i=0;i<songCount;i++){
 		jumpedSong = (rand() % (m + 1)) - (m/2);
-		if(jumpedSong < 0){
-			jumpedSong *= -1;
-			for(j=0;j<jumpedSong;j++){
-				current = current->prev;
-			}
-			printf("\n[%d] User is listening to this song-> %s", (-jumpedSong), current->name);
-			addTopList(head, current->songIndex, current->duration, current->name);
-		}
-		else{
-			for(j=0;j<jumpedSong;j++){
-				current = current->next;
-			}
-			printf("\n[%d] User is listening to this song-> %s", jumpedSong, current->name);
-			addTopList(head, current->songIndex, current->duration, current->name);
-		}
+		if(jumpedSong < 0) for(j=0;j<(-jumpedSong);j++) current = current->prev;
+		else for(j=0;j<jumpedSong;j++) current = current->next;
+		printf("\n[%d] User listens to: %s ", jumpedSong, current->name);
+		addTopList(head, current->songIndex, current->duration, current->name);
 	}	
 }  
 
 
-
-
-
-
 void freePlaylist(SongNode** head) {
-
     SongNode* current = *head;
     SongNode* next_node;
     
@@ -308,6 +262,3 @@ void freeToplist(TopList** head){
 
     *head = NULL;
 }
-
-
-
